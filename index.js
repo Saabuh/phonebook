@@ -41,6 +41,7 @@ let persons = [
 
 //Middleware
 app.use(express.json())
+app.use(express.static('dist'))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 app.get('/api/info', (request, response) => {
