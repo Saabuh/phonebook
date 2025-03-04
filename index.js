@@ -1,11 +1,10 @@
+require('dotenv').config()
+const Entry = require('./models/entry')
 const express = require('express')
 const morgan = require('morgan')
+const mongoose = require('mongoose')
 
 const app = express()
-
-const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: 'unknown endpoint' })
-}
 
 const generateId = () => {
   return String(Math.floor(Math.random() * 1000))
@@ -15,29 +14,6 @@ morgan.token('body', (request, response) => {
 
   return JSON.stringify(request.body)
 })
-
-let persons = [
-    { 
-      "id": "1",
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": "2",
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": "3",
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": "4",
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-]
 
 //Middleware
 app.use(express.json())
@@ -69,34 +45,48 @@ app.get('/api/info', (request, response) => {
 
   const formattedTimeZone = timeZone.split(' ').slice(1).join(' ')
 
-  response.send(`<p>phonebook has info for ${persons.length} people.</p>
-  <p>${formattedDate} ${formattedTime} (${formattedTimeZone})<p/>
-  `)
+  Entry.countDocuments().then(count => {
+    response.send(`<p>phonebook has info for ${count} people.</p>
+    <p>${formattedDate} ${formattedTime} (${formattedTimeZone})<p/>`)
+  })
+
 })
 
 app.get('/api/persons', (request, response) => {
-  response.json(persons)
+
+  Entry.find({}).then(entries => {
+    response.json(entries)
+  })
 })
 
-app.get('/api/persons/:id', (request, response) => {
-  id = request.params.id
+app.get('/api/persons/:id', (request, response, next) => {
 
-  const person = persons.find(note => note.id === id)
-
-  if (!person) {
-    return response.status(404).end()
-  }
-
-  response.json(person)
-
+  Entry.findById(request.params.id).then(entry => {
+    if (entry) {
+      response.json(entry)
+    } else {
+      response.status(404).end()
+    }
+  })
+  .catch(error => {
+      next(error)
+    })
 })
 
-app.delete('/api/persons/:id', (request, response) => {
-  id = request.params.id
-  persons = persons.filter(person => person.id !== id)
+app.delete('/api/persons/:id', (request, response, next) => {
+
+  Entry.findByIdAndDelete(request.params.id).then(result => {
+    if (result) {
+      response.status(204).end()
+    } else {
+      response.status(404).end()
+    }
+  })
+  .catch(error => {
+      next(error)
+    })
 
   //no content returned, request fulfilled
-  response.status(204).end()
 })
 
 app.post('/api/persons', (request, response) => {
@@ -107,25 +97,36 @@ app.post('/api/persons', (request, response) => {
     return response.status(400).json({
       error: "missing name or number."
     })
-  } else if (persons.find(person => person.name === body.name)) {
-    return response.status(400).json({
-      error: "name must be unique."
-    })
   }
 
   const newPerson = {
-    id: generateId(),
     name: request.body.name,
     number: request.body.number
   }
 
-  persons = persons.concat(newPerson)
-
-  response.json(newPerson)
+  const entry = new Entry(newPerson)
+  entry.save().then(savedEntry => {
+    response.json(savedEntry)
+  })
 })
 
 //Middleware
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
+
 app.use(unknownEndpoint)
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } 
+  next(error)
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT)
