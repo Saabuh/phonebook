@@ -5,7 +5,10 @@
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "build:ui": "rm -rf dist && cd ../courseinfo && npm run build && cp -r dist ../phonebook",
+    "deploy": "git add . && git commit -m 'ui build' && git push",
+    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push"
   },
   "author": "nathan",
   "license": "ISC",
