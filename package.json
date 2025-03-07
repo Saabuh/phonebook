@@ -8,12 +8,17 @@
     "dev": "nodemon index.js",
     "build:ui": "rm -rf dist && cd ../courseinfo && npm run build && cp -r dist ../phonebook",
     "deploy": "git add . && git commit -m 'ui build' && git push",
-    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push"
+    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push",
+    "lint": "eslint ."
   },
   "author": "nathan",
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@eslint/js": "^9.21.0",
+    "@stylistic/eslint-plugin-js": "^4.2.0",
+    "eslint": "^9.21.0",
+    "globals": "^16.0.0",
     "nodemon": "^3.1.9",
     "prettier": "^3.5.1"
   },

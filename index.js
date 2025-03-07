@@ -2,15 +2,10 @@ require('dotenv').config()
 const Entry = require('./models/entry')
 const express = require('express')
 const morgan = require('morgan')
-const mongoose = require('mongoose')
 
 const app = express()
 
-const generateId = () => {
-  return String(Math.floor(Math.random() * 1000))
-}
-
-morgan.token('body', (request, response) => {
+morgan.token('body', (request) => {
 
   return JSON.stringify(request.body)
 })
@@ -68,7 +63,7 @@ app.get('/api/persons/:id', (request, response, next) => {
       response.status(404).end()
     }
   })
-  .catch(error => {
+    .catch(error => {
       next(error)
     })
 })
@@ -82,10 +77,10 @@ app.put('/api/persons/:id', (request, response, next) => {
   }
 
   Entry.findByIdAndUpdate(request.params.id, entry, {new: true, runValidators: true})
-  .then(updatedEntry => {
+    .then(updatedEntry => {
       response.json(updatedEntry)
     })
-  .catch(error => {
+    .catch(error => {
       next(error)
     })
 })
@@ -99,7 +94,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
       response.status(404).end()
     }
   })
-  .catch(error => {
+    .catch(error => {
       next(error)
     })
 
@@ -117,7 +112,7 @@ app.post('/api/persons', (request, response, next) => {
   entry.save().then(savedEntry => {
     response.json(savedEntry)
   })
-  .catch(error => {
+    .catch(error => {
       next(error)
     })
 })

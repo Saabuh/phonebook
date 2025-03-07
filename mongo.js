@@ -6,20 +6,19 @@ const mongoose = require('mongoose')
 // }
 
 mongoose.set('strictQuery',false)
-mongoose.connect(process.env.MONGODB_URI).then(response => {
-  console.log("connected to DB.")
-  })
-  .catch(error => {
-    console.log("error connecting to DB")
+mongoose.connect(process.env.MONGODB_URI).then(() => {
+  console.log('connected to DB.')})
+  .catch(() => {
+    console.log('error connecting to DB')
   })
 
-const entrySchema = new mongoose.Schema({
-  name: String,
-  number: String,
-})
+// const entrySchema = new mongoose.Schema({
+//   name: String,
+//   number: String,
+// })
 
 //create model representing a collection within the database with a particular schema
-const Entry = mongoose.model("Entry", entrySchema)
+// const Entry = mongoose.model('Entry', entrySchema)
 
 
 
